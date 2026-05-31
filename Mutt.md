@@ -43,7 +43,7 @@
 #### Loops
 
 - no brackets in for/while loops
-- iterator based
+- iterator based like python
 
 cmake -S . -B build -G Ninja
 cmake --build build

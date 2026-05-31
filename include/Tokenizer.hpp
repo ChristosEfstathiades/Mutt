@@ -4,17 +4,7 @@
 #include <vector>
 #include <cstdint>
 
-enum class TokenType {
-    exit,
-    semi,
-    int_lit
-};
-
-struct Token {
-    TokenType type;
-    std::optional<std::string> value {};
-};
-
+#include "Token.hpp"
 
 class Tokenizer {
 public:

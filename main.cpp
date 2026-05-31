@@ -7,28 +7,7 @@
 #include <vector>
 
 #include "Tokenizer.hpp"
-
-
-
-
-
-std::string tokens_to_asm(const std::vector<Token> &tokens) {
-    std::stringstream out;
-    out << "#include \"Runtime.h\"\n";
-    out << "int main() {\n";
-    for (size_t i=0; i < tokens.size(); i++) {
-        const Token &token = tokens.at(i);
-        if (token.type == TokenType::exit) {
-            if (i + 1 < tokens.size() && tokens.at(i+1).type == TokenType::int_lit) {
-                if (i + 2 < tokens.size() && tokens.at(i+2).type == TokenType::semi) {
-                    out << "    return " << tokens.at(i + 1).value.value() << ";\n";
-                }
-            }
-        }
-    }
-    out << "}\n";
-    return out.str();
-}
+#include "Generation.hpp"
 
 
 int main(int argc, char* argv[]) {
@@ -47,17 +26,21 @@ int main(int argc, char* argv[]) {
         contents = contents_stream.str();
     }
 
-    std::cout << contents << std::endl;
-
     Tokenizer tokenizer(contents);
 
     std::vector<Token> mytokens = tokenizer.tokenize();
+    Parser parser(mytokens);
+    std::optional<NodeExit> tree = parser.parse();
+    if(!tree.has_value()) {
+        std::cerr << "No exit statement" << std::endl;
+        exit(EXIT_FAILURE);
+    }
 
-    std::cout << tokens_to_asm(mytokens) << std::endl;
+    Generator generator(tree.value());
     
     {
         std::fstream outfile("../out.c", std::ios::out);
-        outfile << tokens_to_asm(mytokens);
+        outfile << generator.generate();
     }
     return 0;
 }
