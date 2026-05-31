@@ -14,5 +14,4 @@ public:
 
 private:
     const NodeProg prog;
-    const
 };

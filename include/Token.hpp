@@ -11,7 +11,18 @@ enum class TokenType
     close_paren,
     ident,
     eq,
-    i8
+    // scalar types (see include/Runtime.h)
+    u8,
+    u16,
+    u32,
+    u64,
+    i8,
+    i16,
+    i32,
+    i64,
+    f32,
+    f64,
+    usize
 };
 
 struct Token

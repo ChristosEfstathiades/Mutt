@@ -1,6 +1,7 @@
 #include "Tokenizer.hpp"
 
 #include <iostream>
+#include <unordered_map>
 
 Tokenizer::Tokenizer(const std::string &src) : src(src)
 {
@@ -8,6 +9,21 @@ Tokenizer::Tokenizer(const std::string &src) : src(src)
 
 std::vector<Token> Tokenizer::tokenize()
 {
+    static const std::unordered_map<std::string, TokenType> keywords = {
+        {"exit", TokenType::exit},
+        {"u8", TokenType::u8},
+        {"u16", TokenType::u16},
+        {"u32", TokenType::u32},
+        {"u64", TokenType::u64},
+        {"i8", TokenType::i8},
+        {"i16", TokenType::i16},
+        {"i32", TokenType::i32},
+        {"i64", TokenType::i64},
+        {"f32", TokenType::f32},
+        {"f64", TokenType::f64},
+        {"usize", TokenType::usize},
+    };
+
     std::vector<Token> tokens;
     std::string buf;
     while (peek().has_value())
@@ -19,24 +35,16 @@ std::vector<Token> Tokenizer::tokenize()
             {
                 buf.push_back(consume());
             }
-            if (buf == "exit")
+            if (auto it = keywords.find(buf); it != keywords.end())
             {
-                tokens.push_back({TokenType::exit});
-                buf.clear();
-                continue;
-            }
-            else if (buf == "i8")
-            {
-                tokens.push_back({TokenType::i8});
-                buf.clear();
-                continue;
+                tokens.push_back({it->second});
             }
             else
             {
                 tokens.push_back({TokenType::ident, buf});
-                buf.clear();
-                continue;
             }
+            buf.clear();
+            continue;
         }
         else if (std::isdigit(peek().value()))
         {

@@ -2,6 +2,31 @@
 
 #include <iostream>
 
+namespace
+{
+    // True for the scalar type keywords that may open a variable declaration.
+    bool is_type(TokenType type)
+    {
+        switch (type)
+        {
+        case TokenType::u8:
+        case TokenType::u16:
+        case TokenType::u32:
+        case TokenType::u64:
+        case TokenType::i8:
+        case TokenType::i16:
+        case TokenType::i32:
+        case TokenType::i64:
+        case TokenType::f32:
+        case TokenType::f64:
+        case TokenType::usize:
+            return true;
+        default:
+            return false;
+        }
+    }
+}
+
 Parser::Parser(std::vector<Token> &tokens) : tokens(tokens) {}
 
 std::optional<Token> Parser::peek(size_t ahead) const
@@ -93,7 +118,7 @@ std::optional<NodeStmt> Parser::parse_stmt()
         }
         return NodeStmt{stmt_exit};
     }
-    else if (peek().value().type == TokenType::i8 && peek(1).has_value() && peek(1).value().type == TokenType::ident && peek(2).has_value() && peek(2).value().type == TokenType::eq)
+    else if (is_type(peek().value().type) && peek(1).has_value() && peek(1).value().type == TokenType::ident && peek(2).has_value() && peek(2).value().type == TokenType::eq)
     {
         Token type = consume();
         Token identifier = consume();
