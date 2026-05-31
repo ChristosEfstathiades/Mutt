@@ -1,12 +1,18 @@
 #pragma once
 
 #include "Parser.hpp"
+#include <sstream>
 
-class Generator {
+class Generator
+{
 public:
-    Generator(NodeExit root);
+    Generator(NodeProg prog);
 
-    std::string generate();
+    std::string gen_prog() const;
+    std::string gen_stmt(const NodeStmt &stmt) const;
+    std::string gen_expr(const NodeExpr &expr) const;
+
 private:
-    const NodeExit root;
+    const NodeProg prog;
+    const
 };

@@ -5,14 +5,16 @@
 #include <cstdint>
 #include <optional>
 #include <vector>
+#include <cstdlib>
 
 #include "Tokenizer.hpp"
 #include "Generation.hpp"
 
+int main(int argc, char *argv[])
+{
 
-int main(int argc, char* argv[]) {
-
-    if (argc != 2) {
+    if (argc != 2)
+    {
         std::cerr << "Incorrect usage. Correct usage is..." << std::endl;
         std::cerr << "mutt <input.mutt>" << std::endl;
         return EXIT_FAILURE;
@@ -30,17 +32,21 @@ int main(int argc, char* argv[]) {
 
     std::vector<Token> mytokens = tokenizer.tokenize();
     Parser parser(mytokens);
-    std::optional<NodeExit> tree = parser.parse();
-    if(!tree.has_value()) {
+    std::optional<NodeProg> tree = parser.parse_prog();
+    if (!tree.has_value())
+    {
         std::cerr << "No exit statement" << std::endl;
         exit(EXIT_FAILURE);
     }
 
     Generator generator(tree.value());
-    
+
     {
         std::fstream outfile("../out.c", std::ios::out);
-        outfile << generator.generate();
+        outfile << generator.gen_prog();
     }
+
+    system("gcc ../out.c -I../include -o output");
+
     return 0;
 }

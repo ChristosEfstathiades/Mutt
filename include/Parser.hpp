@@ -1,29 +1,57 @@
 #pragma once
 
 #include <vector>
+#include <variant>
 
 #include "Token.hpp"
 
-struct NodeExpr {
+struct NodeExprIntLit
+{
     Token int_lit;
 };
-struct NodeExit {
+struct NodeExprIdent
+{
+    Token ident;
+};
+struct NodeExpr
+{
+    std::variant<NodeExprIntLit, NodeExprIdent> var;
+};
+
+struct NodeStmtExit
+{
+    NodeExpr expr;
+};
+struct NodeStmtVar
+{
+    Token type;
+    Token ident;
     NodeExpr expr;
 };
 
-class Parser {
+struct NodeStmt
+{
+    std::variant<NodeStmtExit, NodeStmtVar> var; // union with tracker for runtime
+};
+
+struct NodeProg
+{
+    std::vector<NodeStmt> statements;
+};
+
+class Parser
+{
 public:
     Parser(std::vector<Token> &tokens);
 
-    std::optional<NodeExit> parse();
+    std::optional<NodeProg> parse_prog();
     std::optional<NodeExpr> parse_expr();
+    std::optional<NodeStmt> parse_stmt();
 
 private:
     std::vector<Token> tokens;
     size_t index = 0;
 
-
-    std::optional<Token> peek(size_t ahead = 0) const;
+    [[nodiscard]] std::optional<Token> peek(size_t ahead = 0) const;
     Token consume();
-
 };

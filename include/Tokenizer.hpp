@@ -15,6 +15,6 @@ private:
     const std::string src;
     size_t index = 0;
 
-    std::optional<char> peek(size_t ahead = 0) const;
+    [[nodiscard]] std::optional<char> peek(size_t ahead = 0) const;
     char consume();
 };

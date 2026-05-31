@@ -2,13 +2,20 @@
 #include <string>
 #include <optional>
 
-enum class TokenType {
+enum class TokenType
+{
     exit,
     semi,
-    int_lit
+    int_lit,
+    open_paren,
+    close_paren,
+    ident,
+    eq,
+    i8
 };
 
-struct Token {
+struct Token
+{
     TokenType type;
-    std::optional<std::string> value {};
+    std::optional<std::string> value{};
 };
