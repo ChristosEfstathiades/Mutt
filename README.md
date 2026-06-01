@@ -1,1 +1,3 @@
-![Mutt logo](mutt-logo.png "The Mutt Language")
+<div align="center">
+  <img src="mutt-logo.png" alt="Mutt logo" width="200" />
+</div>
