@@ -1,0 +1,13 @@
+Windows Registry Editor Version 5.00
+
+[HKEY_CLASSES_ROOT\.mutt]
+@="MuttFile"
+
+[HKEY_CLASSES_ROOT\MuttFile]
+@="Mutt Source File"
+
+[HKEY_CLASSES_ROOT\MuttFile\DefaultIcon]
+@="C:\\msys64\\home\\chris\\Mutt\\mutt-logo.ico"
+
+[HKEY_CLASSES_ROOT\MuttFile\shell\open\command]
+@="\"C:\\msys64\\home\\chris\\Mutt\\build\\mutt.exe\" \"%1\""
