@@ -66,11 +66,11 @@ std::string Generator::gen_stmt(const NodeStmt &stmt) const
         const Generator &gen;
         std::string operator()(const NodeStmtExit &stmt_exit) const
         {
-            return "    return " + gen.gen_expr(stmt_exit.expr) + ";\n";
+            return "return " + gen.gen_expr(stmt_exit.expr) + ";\n";
         }
         std::string operator()(const NodeStmtVar &stmt_var) const
         {
-            return "    " + c_type(stmt_var.type) + " " +
+            return c_type(stmt_var.type) + " " +
                    stmt_var.ident.value.value() + " = " +
                    gen.gen_expr(stmt_var.expr) + ";\n";
         }
@@ -91,7 +91,6 @@ std::string Generator::gen_prog() const
         out << gen_stmt(stmt);
     }
 
-    out << "    return 0;\n";
     out << "}\n";
     return out.str();
 }
