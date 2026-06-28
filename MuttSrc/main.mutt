@@ -1,2 +1,3 @@
 i8 hello = 69;
 u8 goodbye = 123;
+exit(hello);

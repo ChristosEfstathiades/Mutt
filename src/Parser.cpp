@@ -27,7 +27,7 @@ namespace
     }
 }
 
-Parser::Parser(std::vector<Token> &tokens) : tokens(tokens) {}
+Parser::Parser(std::vector<Token> &tokens) : tokens(tokens), arena{1024 * 1024} {}
 
 std::optional<Token> Parser::peek(size_t ahead) const
 {
@@ -42,18 +42,24 @@ std::optional<Token> Parser::peek(size_t ahead) const
 }
 
 // expression can be identifier or literal
-std::optional<NodeExpr> Parser::parse_expr()
+std::optional<NodeExpr *> Parser::parse_expr()
 {
-    std::optional<NodeExpr> expr_node;
+    std::optional<NodeExpr *> expr_node;
     if (peek().has_value() && peek().value().type == TokenType::int_lit)
     {
-        NodeExprIntLit intLit = {consume()};
-        return NodeExpr{intLit};
+        auto intlit = arena.allocate<NodeExprIntLit>();
+        intlit->int_lit = consume();
+        auto expr = arena.allocate<NodeExpr>();
+        expr->var = intlit;
+        return expr;
     }
     else if (peek().has_value() && peek().value().type == TokenType::ident)
     {
-        NodeExprIdent identifier = {consume()};
-        return NodeExpr{identifier};
+        auto identifier = arena.allocate<NodeExprIdent>();
+        identifier->ident = consume();
+        auto expr = arena.allocate<NodeExpr>();
+        expr->var = identifier;
+        return expr;
     }
     else
     {
@@ -82,16 +88,16 @@ std::optional<NodeProg> Parser::parse_prog()
     return prog;
 }
 
-std::optional<NodeStmt> Parser::parse_stmt()
+std::optional<NodeStmt *> Parser::parse_stmt()
 {
     if (peek().value().type == TokenType::exit && peek(1).has_value() && peek(1).value().type == TokenType::open_paren)
     {
         consume(); // open paren
         consume();
-        NodeStmtExit stmt_exit;
+        NodeStmtExit *stmt_exit = arena.allocate<NodeStmtExit>();
         if (auto node_expr = parse_expr())
         { // true if optional has value
-            stmt_exit = {node_expr.value()};
+            stmt_exit->expr = node_expr.value();
         }
         else
         {
@@ -116,20 +122,22 @@ std::optional<NodeStmt> Parser::parse_stmt()
             std::cerr << "Expected semicolon" << std::endl;
             exit(EXIT_FAILURE);
         }
-        return NodeStmt{stmt_exit};
+        auto stmt = arena.allocate<NodeStmt>();
+        stmt->var = stmt_exit;
+        return stmt;
     }
     else if (is_type(peek().value().type) && peek(1).has_value() && peek(1).value().type == TokenType::ident && peek(2).has_value() && peek(2).value().type == TokenType::eq)
     {
         Token type = consume();
         Token identifier = consume();
 
-        auto stmnt_var = NodeStmtVar{};
-        stmnt_var.type = type;
-        stmnt_var.ident = identifier;
+        auto stmnt_var = arena.allocate<NodeStmtVar>();
+        stmnt_var->type = type;
+        stmnt_var->ident = identifier;
         consume();
         if (auto expr = parse_expr())
         {
-            stmnt_var.expr = expr.value();
+            stmnt_var->expr = expr.value();
         }
         else
         {
@@ -145,7 +153,9 @@ std::optional<NodeStmt> Parser::parse_stmt()
             std::cerr << "Expected semicolon" << std::endl;
             exit(EXIT_FAILURE);
         }
-        return NodeStmt{stmnt_var};
+        auto stmt = arena.allocate<NodeStmt>();
+        stmt->var = stmnt_var;
+        return stmt;
     }
     else
     {

@@ -42,41 +42,60 @@ namespace
 
 Generator::Generator(NodeProg prog) : prog(prog) {}
 
-std::string Generator::gen_expr(const NodeExpr &expr) const
+std::string Generator::gen_expr(const NodeExpr *expr) const
 {
     struct ExprVisitor
     {
-        std::string operator()(const NodeExprIntLit &expr_int_lit) const
+        const Generator &gen;
+        std::string operator()(const NodeExprIntLit *expr_int_lit) const
         {
-            return expr_int_lit.int_lit.value.value();
+            return expr_int_lit->int_lit.value.value();
         }
-        std::string operator()(const NodeExprIdent &expr_ident) const
+        std::string operator()(const NodeExprIdent *expr_ident) const
         {
-            return expr_ident.ident.value.value();
+            return expr_ident->ident.value.value();
+        }
+        std::string operator()(const NodeBinExpr *bin_expr) const
+        {
+            struct BinExprVisitor
+            {
+                const Generator &gen;
+                std::string operator()(const BinExprAdd *add) const
+                {
+                    return "(" + gen.gen_expr(add->left) + " + " +
+                           gen.gen_expr(add->right) + ")";
+                }
+                std::string operator()(const BinExprMult *mult) const
+                {
+                    return "(" + gen.gen_expr(mult->left) + " * " +
+                           gen.gen_expr(mult->right) + ")";
+                }
+            };
+            return std::visit(BinExprVisitor{gen}, bin_expr->var);
         }
     };
-    ExprVisitor visitor;
-    return std::visit(visitor, expr.var);
+    ExprVisitor visitor{*this};
+    return std::visit(visitor, expr->var);
 }
 
-std::string Generator::gen_stmt(const NodeStmt &stmt) const
+std::string Generator::gen_stmt(const NodeStmt *stmt) const
 {
     struct StmtVisitor
     {
         const Generator &gen;
-        std::string operator()(const NodeStmtExit &stmt_exit) const
+        std::string operator()(const NodeStmtExit *stmt_exit) const
         {
-            return "return " + gen.gen_expr(stmt_exit.expr) + ";\n";
+            return "return " + gen.gen_expr(stmt_exit->expr) + ";\n";
         }
-        std::string operator()(const NodeStmtVar &stmt_var) const
+        std::string operator()(const NodeStmtVar *stmt_var) const
         {
-            return c_type(stmt_var.type) + " " +
-                   stmt_var.ident.value.value() + " = " +
-                   gen.gen_expr(stmt_var.expr) + ";\n";
+            return c_type(stmt_var->type) + " " +
+                   stmt_var->ident.value.value() + " = " +
+                   gen.gen_expr(stmt_var->expr) + ";\n";
         }
     };
     StmtVisitor visitor{*this};
-    return std::visit(visitor, stmt.var);
+    return std::visit(visitor, stmt->var);
 }
 
 std::string Generator::gen_prog() const
@@ -86,7 +105,7 @@ std::string Generator::gen_prog() const
     out << "#include \"Runtime.h\"\n";
     out << "int main() {\n";
 
-    for (const NodeStmt &stmt : prog.statements)
+    for (const NodeStmt *stmt : prog.statements)
     {
         out << gen_stmt(stmt);
     }
